@@ -1,0 +1,58 @@
+1️⃣ Connect to PostgreSQL
+Open terminal:
+sudo -u postgres psql
+
+
+or if you want to connect as your FastAPI user:
+psql -U fastapi_user -d fastapi_db
+
+
+It will ask for a password if you set one. ---> mypassword
+
+2️⃣ See your tables
+Once inside psql:
+-- List tables in the current database
+\dt
+
+
+You should see something like:
+        List of relations
+ Schema | Name  | Type  | Owner
+--------+-------+-------+-------
+ public | item  | table | fastapi_user
+
+3️⃣ Check table contents
+SELECT * FROM item;
+
+It will be empty at first.
+
+4️⃣ Quick test with FastAPI
+Suppose you have this endpoint:
+@app.post("/items/")
+async def create_item(item: Item, session: AsyncSession = Depends(get_session)):
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    return item
+
+Use Postman, curl, or your browser to send a request:
+curl -X POST "http://127.0.0.1:8000/items/" \
+-H "Content-Type: application/json" \
+-d '{"name": "Test Item", "description": "My first item"}'
+
+Then check in PostgreSQL again:
+SELECT * FROM item;
+
+/////////////////////////////
+sudo -u postgres psql   ///or///  sudo -u postgres psql -d fastapi_db ---> This opens fastapi_db immediately.
+\l
+\c fastapi_db
+\dt
+SELECT * FROM item;
+
+///
+curl -X POST "http://127.0.0.1:8000/items/" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Apple", "description": "A juicy fruit"}'
+
+curl http://127.0.0.1:8000/items/
